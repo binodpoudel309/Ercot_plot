@@ -1,0 +1,90 @@
+# POI Voltage	Q+	Q-	Lagging	Leading
+# 0.95	134.43		255.00	
+# 1.00		-134.43		-356.00
+# 1.04	134.43		400.00	
+# 1.05		-134.43		-450.00
+				
+				
+# POI  Voltage	Q+	Q-	Lagging	Leading
+# 0.95	134.43	-134.43	151.90	-174.13
+# 1.00	134.43	-134.43	153.51	-269.08
+# 1.05	134.43	-134.43	152.81	-371.98
+
+import pandas as pd
+import numpy as np
+
+df = pd.read_clipboard(sep = '\t')
+print(df)
+
+import matplotlib.pyplot as plt
+
+voltage = df['POI Voltage']
+qplus = df['Q+']
+qminus = df['Q-']
+
+
+dfqplus = df[qplus>0]
+dfqminus = df[qminus<0]
+
+lagging = dfqplus['Lagging']
+leading = dfqminus['Leading']
+
+vqplus = dfqplus['POI Voltage']
+vqminus = dfqminus['POI Voltage']
+qplus = dfqplus['Q+']
+qminus = dfqminus['Q-']
+print(dfqplus)
+print(dfqminus)
+print(vqplus)
+print(vqminus)
+fig, ax = plt.subplots()
+fig.set_figwidth(6)
+fig.set_figheight(4)
+
+vqplus = vqplus.to_numpy()
+qplus = qplus.to_numpy()
+vqminus = vqminus.to_numpy()
+qminus = qminus.to_numpy()
+leading = leading.to_numpy()
+lagging = lagging.to_numpy()
+
+plt.plot(vqplus,qplus)
+# plt.xticks(np.arange)
+plt.fill_between(vqplus,qplus,color='gray', alpha=0.2)
+
+plt.annotate('Q@0.95pf lag = '+ str(qplus[-1]),
+            xy=(vqplus[-1],qplus[-1]) ,xytext=(vqplus[-1]-0.05,qplus[-1]*0.7), textcoords='data'
+            )
+
+plt.plot(vqminus,qminus)
+plt.fill_between(vqminus,qminus,color='gray', alpha=0.2)
+plt.annotate('Q@0.95pf lead= '+ str(qminus[-1]),
+            xy=(vqminus[-1],qminus[-1]) ,xytext=(vqminus[-1]-0.05,qminus[-1]*0.8), textcoords='data'
+            )
+
+plt.scatter(vqplus,lagging, marker = '^',color = 'g')
+for x, y in zip(vqplus, lagging):
+    plt.annotate(y, xy=(x, y), xytext=(x+0.002,y),textcoords='data'
+    )
+
+
+
+plt.scatter(vqminus,leading,marker = 'o',color = 'orange')
+
+for x, y in zip(vqminus, leading):
+    plt.annotate(y, xy=(x, y), xytext=(x+0.002,y),textcoords='data'
+    )
+
+
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+
+plt.xlabel('Voltage (pu)')
+plt.ylabel('Reactive Power (MVAr)')
+xticks = [0.95,1,1.05]
+plt.xticks(xticks)
+plt.tight_layout()
+plt.savefig('ReactivePowerAnalysis.svg')
+plt.show()
+
+
